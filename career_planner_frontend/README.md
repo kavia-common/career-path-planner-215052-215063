@@ -36,6 +36,14 @@ Launches the test runner in interactive watch mode.
 Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
+## CRUD Flows (Create/Update)
+
+- Users page: "Add User" opens a dialog to POST /db/users. Each row has "Edit" which PUTs /db/users/{id}. The User Detail page also provides an Edit dialog.
+- Roles page: "Add Role" opens a dialog to POST /db/roles. Each role row has "Edit" which PUTs /db/roles/{id}. Reads primarily via /roles with a fallback to /db/roles.
+- Competencies page: Users can adjust self-level via PUT /competencies/{id}. Admins see "Add Competency" to POST /db/competencies and can edit via PUT /db/competencies/{id}.
+
+Validation happens client-side (required fields, email format) and API errors are surfaced in-line. Auth token is forwarded automatically from Supabase session via apiClient.
+
 ## Catalog Data and Empty States
 
 Role/competency catalog and adjacency data are provided by the FastAPI backend. If the catalog is not seeded yet, the frontend will show helpful empty-state messages (no hard errors). Admin users can use the Admin page to trigger ingestion once the backend wiring is connected.

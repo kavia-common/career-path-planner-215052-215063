@@ -49,6 +49,12 @@ class ApiClient {
     /** PUT wrapper for backend requests with JSON body. */
     return this.request(path, { method: 'PUT', body: JSON.stringify(body) });
   }
+
+  // PUBLIC_INTERFACE
+  delete(path) {
+    /** DELETE wrapper if needed later. */
+    return this.request(path, { method: 'DELETE' });
+  }
 }
 
 export const apiClient = new ApiClient();

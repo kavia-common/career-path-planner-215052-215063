@@ -5,13 +5,16 @@ import { Link } from 'react-router-dom';
 // PUBLIC_INTERFACE
 export default function RolesPage() {
   /**
-   * Role Navigator: search/filter over roles catalog. Uses GET /roles (REST) falling back to /db/roles if needed.
-   * Shows empty guidance if catalogs are not seeded.
+   * Role Navigator with create/edit dialogs. Primary read GET /roles; fallback GET /db/roles.
+   * Create via POST /db/roles; update via PUT /db/roles/{id}.
    */
   const [roles, setRoles] = useState([]);
   const [q, setQ] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState(null); // role or null
+  const [form, setForm] = useState({ code: '', name: '', summary: '' });
+  const [saving, setSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -42,11 +45,47 @@ export default function RolesPage() {
     );
   }, [roles, q]);
 
+  const openCreate = () => {
+    setEditing({ id: null });
+    setForm({ code: '', name: '', summary: '' });
+  };
+  const openEdit = (r) => {
+    setEditing({ id: r.id });
+    setForm({ code: r.code || '', name: r.name || '', summary: r.summary || '' });
+  };
+  const validate = () => {
+    if (!form.code.trim()) return 'Code is required';
+    if (!form.name.trim()) return 'Name is required';
+    return '';
+  };
+  const onSave = async () => {
+    const v = validate();
+    if (v) { setErr(v); return; }
+    setSaving(true);
+    setErr('');
+    try {
+      if (editing?.id) {
+        await apiClient.put(`/db/roles/${editing.id}`, form);
+      } else {
+        await apiClient.post('/db/roles', form);
+      }
+      setEditing(null);
+      await load();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="card">
       <div className="row mb-16">
         <h2 className="grow">Role Navigator</h2>
-        <input className="input" placeholder="Search roles..." value={q} onChange={e => setQ(e.target.value)} />
+        <button className="btn secondary" onClick={openCreate}>Add Role</button>
+      </div>
+      <div className="row mb-16">
+        <input className="input grow" placeholder="Search roles..." value={q} onChange={e => setQ(e.target.value)} />
       </div>
       {loading && <div className="text-muted">Loading roles...</div>}
       {err && <div style={{ color: 'var(--error)' }}>{err}</div>}
@@ -69,11 +108,36 @@ export default function RolesPage() {
                 <td className="text-muted">{r.code || '-'}</td>
                 <td>{r.name}</td>
                 <td className="text-muted">{r.summary || r.family || '-'}</td>
-                <td><Link to={`/roles/${r.id}`} className="btn ghost">View</Link></td>
+                <td className="row">
+                  <Link to={`/roles/${r.id}`} className="btn ghost">View</Link>
+                  <button className="btn ghost" onClick={() => openEdit(r)}>Edit</button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+
+      {!!editing && (
+        <div className="card" style={{ position: 'fixed', right: 20, bottom: 20, maxWidth: 460, zIndex: 50 }}>
+          <h3>{editing.id ? 'Edit Role' : 'Add Role'}</h3>
+          <div className="mb-16">
+            <label>Code</label>
+            <input className="input" value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} />
+          </div>
+          <div className="mb-16">
+            <label>Name</label>
+            <input className="input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+          </div>
+          <div className="mb-16">
+            <label>Summary</label>
+            <input className="input" value={form.summary} onChange={e => setForm(f => ({ ...f, summary: e.target.value }))} />
+          </div>
+          <div className="row">
+            <button className="btn" onClick={onSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+            <button className="btn ghost" onClick={() => setEditing(null)} disabled={saving}>Cancel</button>
+          </div>
+        </div>
       )}
     </div>
   );
