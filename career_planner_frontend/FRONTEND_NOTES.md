@@ -21,8 +21,10 @@ Auth:
 - Uses Supabase JWT; forwards to backend via Authorization: Bearer <token>
 - RBAC: UI restricts Admin page based on profile.is_admin (retrieved from GET /users/me)
 
-Theme:
-- Ocean Professional as CSS variables, light/dark toggle in sidebar
+Theme & Layout:
+- Ocean Professional theme centralized in `src/components/layout.css` (light/dark tokens).
+- Persistent, collapsible sidebar and top header provided by `src/components/Layout.js`.
+- Page transitions are CSS-driven for smooth fades/slides.
 
 Backend endpoints (align to FastAPI; DB-backed under /db):
 - GET /users/me

@@ -1,40 +1,47 @@
 # Lightweight React Template for KAVIA
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+This project provides a minimal React template upgraded with a polished Ocean Professional UI: persistent sidebar, top header, smooth transitions, and modern components.
 
 ## Features
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
+- Ocean Professional theme with accessible contrast and tokens
+- Persistent, collapsible sidebar with active-route highlighting and icons
+- Top header with title, search placeholder, and profile area
+- Smooth page transitions (CSS fade/slide)
+- Polished components: cards, tables (row hover), forms, buttons, badges
+- Responsive layout and keyboard accessibility (focus styles, ARIA)
+- Environment-driven API base URL; no credentials hardcoded
 
 ## Getting Started
 
-Create a `.env` file (or set environment variables in your deployment) with:
+Create a `.env` file (or set environment variables) with:
 
 - REACT_APP_BACKEND_URL=https://<backend-host>:3001
 - REACT_APP_SUPABASE_URL=...
 - REACT_APP_SUPABASE_ANON_KEY=...
 - REACT_APP_SITE_URL=https://<your-frontend-host> (optional; defaults to window.location.origin)
 
-The app reads the backend base URL from REACT_APP_BACKEND_URL and sends requests to that origin.
+The app reads the backend base URL from REACT_APP_BACKEND_URL and forwards the Supabase JWT automatically via the api client.
 
-In the project directory, you can run:
+Commands:
 
-### `npm start`
+- npm start — dev server at http://localhost:3000
+- npm test — run tests (CI mode)
+- npm run build — production build
 
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## UI & Theme Customization
 
-### `npm test`
-
-Launches the test runner in interactive watch mode.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Theme tokens and layout styles live in src/components/layout.css.
+  - Adjust colors, spacing, radii, and shadows by editing CSS variables at the top of the file.
+  - Dark mode uses the [data-theme="dark"] variables automatically.
+- The persistent layout is implemented in src/components/Layout.js. It provides:
+  - Collapsible sidebar with icons and route highlights
+  - Top header with search box placeholder and profile area
+  - Route transition wrapper for smooth page changes
+- Page components remain in src/pages/* and automatically inherit the theme.
+- Accessibility:
+  - Interactive elements have focus-visible outlines and ARIA labels where relevant.
+  - Tables include hover states and readable header styles.
 
 ## CRUD Flows (Create/Update)
 
@@ -46,12 +53,8 @@ Validation happens client-side (required fields, email format) and API errors ar
 
 ## Catalog Data and Empty States
 
-Role/competency catalog and adjacency data are provided by the FastAPI backend. If the catalog is not seeded yet, the frontend will show helpful empty-state messages (no hard errors). Admin users can use the Admin page to trigger ingestion once the backend wiring is connected.
-
-## Customization
-
-The Ocean Professional theme lives in `src/App.css`. Common components use CSS utility classes (no UI library).
+If the catalog is not seeded yet, the UI shows helpful empty-state messages; Admin can trigger ingestion from the Admin page once backend wiring is connected.
 
 ## Learn More
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+To learn React, check out the React documentation: https://reactjs.org/

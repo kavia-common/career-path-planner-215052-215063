@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
-import './App.css';
-import { SupabaseProvider, useSupabase } from './auth/SupabaseProvider';
+import React, { useState } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import './components/layout.css';
+import { SupabaseProvider } from './auth/SupabaseProvider';
 import { AuthGate } from './auth/AuthGate';
 import DashboardPage from './pages/DashboardPage';
 import RolesPage from './pages/RolesPage';
@@ -11,88 +11,19 @@ import PlansGoalsPage from './pages/PlansGoalsPage';
 import AdminPage from './pages/admin/AdminPage';
 import UsersPage from './pages/UsersPage';
 import UserDetailPage from './pages/UserDetailPage';
+import Layout from './components/Layout';
 
 /**
- * AppShell renders the layout, navigation, and routes.
- */
-function AppShell() {
-  const [theme, setTheme] = useState('light');
-  const { session, profile, signOut } = useSupabase();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  const isAdmin = !!profile?.is_admin;
-
-  const navLinkClass = ({ isActive }) => (isActive ? 'active' : '');
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
-  };
-
-  return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">Career Planner</div>
-
-        <div className="nav-section">Main</div>
-        <nav className="nav">
-          <NavLink to="/" end className={navLinkClass}>Dashboard</NavLink>
-          <NavLink to="/roles" className={navLinkClass}>Roles</NavLink>
-          <NavLink to="/competencies" className={navLinkClass}>Competencies</NavLink>
-          <NavLink to="/plans" className={navLinkClass}>Plans & Goals</NavLink>
-          <NavLink to="/users" className={navLinkClass}>Users</NavLink>
-          {isAdmin && <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>}
-        </nav>
-
-        <div className="nav-section">Account</div>
-        <div className="nav">
-          <button className="linklike" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}>
-            {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
-          </button>
-          {session ? (
-            <button className="linklike" onClick={handleSignOut}>Sign out</button>
-          ) : (
-            <NavLink to="/login" className={navLinkClass}>Login</NavLink>
-          )}
-        </div>
-      </aside>
-
-      <header className="header">
-        <div />
-        <div className="row">
-          <div className="text-muted">{profile?.email}</div>
-          <div className="text-muted">{isAdmin ? 'Admin' : 'User'}</div>
-        </div>
-      </header>
-
-      <main className="content">
-        <Routes>
-          <Route path="/" element={<AuthGate><DashboardPage /></AuthGate>} />
-          <Route path="/roles" element={<AuthGate><RolesPage /></AuthGate>} />
-          <Route path="/roles/:roleId" element={<AuthGate><RoleDetailPage /></AuthGate>} />
-          <Route path="/competencies" element={<AuthGate><CompetenciesPage /></AuthGate>} />
-          <Route path="/plans" element={<AuthGate><PlansGoalsPage /></AuthGate>} />
-          <Route path="/users" element={<AuthGate><UsersPage /></AuthGate>} />
-          <Route path="/users/:userId" element={<AuthGate><UserDetailPage /></AuthGate>} />
-          <Route path="/admin" element={<AuthGate adminOnly><AdminPage /></AuthGate>} />
-          <Route path="/login" element={<LoginPage />} />
-        </Routes>
-      </main>
-    </div>
-  );
-}
-
-/**
- * Simple email/password login form.
+ * Simple email/password login form (kept minimal, styled via shared tokens).
  */
 function LoginPage() {
-  const { signInWithPassword, signUpWithPassword } = useSupabase();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Use SupabaseProvider hook locally to keep behavior unchanged
+  const { signInWithPassword, signUpWithPassword } = require('./auth/SupabaseProvider');
+
+  const { useSupabase } = require('./auth/SupabaseProvider');
+  const supa = useSupabase?.();
   const [mode, setMode] = useState('signin');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -103,12 +34,12 @@ function LoginPage() {
     setMessage('');
     try {
       if (mode === 'signin') {
-        const { error } = await signInWithPassword(email, password);
+        const { error } = await supa.signInWithPassword(email, password);
         if (error) throw error;
         setMessage('Signed in successfully.');
       } else {
         const siteUrl = process.env.REACT_APP_SITE_URL || window.location.origin;
-        const { error } = await signUpWithPassword(email, password, siteUrl);
+        const { error } = await supa.signUpWithPassword(email, password, siteUrl);
         if (error) throw error;
         setMessage('Check your email to confirm your account.');
       }
@@ -120,16 +51,16 @@ function LoginPage() {
   };
 
   return (
-    <div className="card auth-card">
+    <div className="card auth-card" role="form" aria-label="Login form">
       <h2>{mode === 'signin' ? 'Sign In' : 'Create Account'}</h2>
       <form onSubmit={onSubmit}>
         <div className="mb-16">
-          <label>Email</label>
-          <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+          <label htmlFor="email">Email</label>
+          <input id="email" className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
         </div>
         <div className="mb-16">
-          <label>Password</label>
-          <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+          <label htmlFor="password">Password</label>
+          <input id="password" className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
         </div>
         <div className="row">
           <button className="btn" type="submit" disabled={loading}>
@@ -139,7 +70,7 @@ function LoginPage() {
             {mode === 'signin' ? 'Create Account' : 'Have an account? Sign In'}
           </button>
         </div>
-        {message && <div className="mt-16 text-muted">{message}</div>}
+        {message && <div className="mt-16 text-muted" role="status">{message}</div>}
       </form>
     </div>
   );
@@ -154,7 +85,19 @@ function App() {
   return (
     <SupabaseProvider url={supabaseUrl} anonKey={anonKey}>
       <BrowserRouter>
-        <AppShell />
+        <Layout>
+          <Routes>
+            <Route path="/" element={<AuthGate><DashboardPage /></AuthGate>} />
+            <Route path="/roles" element={<AuthGate><RolesPage /></AuthGate>} />
+            <Route path="/roles/:roleId" element={<AuthGate><RoleDetailPage /></AuthGate>} />
+            <Route path="/competencies" element={<AuthGate><CompetenciesPage /></AuthGate>} />
+            <Route path="/plans" element={<AuthGate><PlansGoalsPage /></AuthGate>} />
+            <Route path="/users" element={<AuthGate><UsersPage /></AuthGate>} />
+            <Route path="/users/:userId" element={<AuthGate><UserDetailPage /></AuthGate>} />
+            <Route path="/admin" element={<AuthGate adminOnly><AdminPage /></AuthGate>} />
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </Layout>
       </BrowserRouter>
     </SupabaseProvider>
   );
