@@ -11,6 +11,15 @@ This project provides a minimal React template with a clean, modern UI and minim
 
 ## Getting Started
 
+Create a `.env` file (or set environment variables in your deployment) with:
+
+- REACT_APP_BACKEND_URL=https://<backend-host>:3001
+- REACT_APP_SUPABASE_URL=...
+- REACT_APP_SUPABASE_ANON_KEY=...
+- REACT_APP_SITE_URL=https://<your-frontend-host> (optional; defaults to window.location.origin)
+
+The app reads the backend base URL from REACT_APP_BACKEND_URL and sends requests to that origin.
+
 In the project directory, you can run:
 
 ### `npm start`
@@ -27,56 +36,14 @@ Launches the test runner in interactive watch mode.
 Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
+## Catalog Data and Empty States
+
+Role/competency catalog and adjacency data are provided by the FastAPI backend. If the catalog is not seeded yet, the frontend will show helpful empty-state messages (no hard errors). Admin users can use the Admin page to trigger ingestion once the backend wiring is connected.
+
 ## Customization
 
-### Colors
-
-The main brand colors are defined as CSS variables in `src/App.css`:
-
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
-```
-
-### Components
-
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
-
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
+The Ocean Professional theme lives in `src/App.css`. Common components use CSS utility classes (no UI library).
 
 ## Learn More
 
 To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

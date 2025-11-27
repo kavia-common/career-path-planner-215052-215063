@@ -2,6 +2,7 @@ const BASE_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 class ApiClient {
   constructor() {
+    // Normalize to avoid double slashes when concatenating with relative path
     this.base = BASE_URL.replace(/\/$/, '');
     this.token = null;
   }
@@ -13,7 +14,8 @@ class ApiClient {
   }
 
   async request(path, options = {}) {
-    const url = `${this.base}${path}`;
+    const p = path.startsWith('/') ? path : `/${path}`;
+    const url = `${this.base}${p}`;
     const headers = {
       'Content-Type': 'application/json',
       ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),

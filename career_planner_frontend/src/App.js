@@ -9,6 +9,8 @@ import RoleDetailPage from './pages/RoleDetailPage';
 import CompetenciesPage from './pages/CompetenciesPage';
 import PlansGoalsPage from './pages/PlansGoalsPage';
 import AdminPage from './pages/admin/AdminPage';
+import UsersPage from './pages/UsersPage';
+import UserDetailPage from './pages/UserDetailPage';
 
 /**
  * AppShell renders the layout, navigation, and routes.
@@ -42,6 +44,7 @@ function AppShell() {
           <NavLink to="/roles" className={navLinkClass}>Roles</NavLink>
           <NavLink to="/competencies" className={navLinkClass}>Competencies</NavLink>
           <NavLink to="/plans" className={navLinkClass}>Plans & Goals</NavLink>
+          <NavLink to="/users" className={navLinkClass}>Users</NavLink>
           {isAdmin && <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>}
         </nav>
 
@@ -73,6 +76,8 @@ function AppShell() {
           <Route path="/roles/:roleId" element={<AuthGate><RoleDetailPage /></AuthGate>} />
           <Route path="/competencies" element={<AuthGate><CompetenciesPage /></AuthGate>} />
           <Route path="/plans" element={<AuthGate><PlansGoalsPage /></AuthGate>} />
+          <Route path="/users" element={<AuthGate><UsersPage /></AuthGate>} />
+          <Route path="/users/:userId" element={<AuthGate><UserDetailPage /></AuthGate>} />
           <Route path="/admin" element={<AuthGate adminOnly><AdminPage /></AuthGate>} />
           <Route path="/login" element={<LoginPage />} />
         </Routes>

@@ -4,26 +4,26 @@ import { apiClient } from '../../services/apiClient';
 // PUBLIC_INTERFACE
 export default function AdminPage() {
   /**
-   * Admin functions: trigger ingestion, show latest ingestion runs, and view catalog lists.
+   * Admin functions: trigger ingestion, show latest ingestion run, and view catalog lists.
    * Requires RBAC: only visible to admin users via AuthGate(adminOnly).
    */
   const [roles, setRoles] = useState([]);
   const [competencies, setCompetencies] = useState([]);
-  const [runs, setRuns] = useState([]);
+  const [latestRun, setLatestRun] = useState(null);
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
 
   const load = async () => {
     setErr('');
     try {
-      const [r, c, ir] = await Promise.all([
-        apiClient.get('/roles'),
-        apiClient.get('/competencies/catalog'),
-        apiClient.get('/admin/ingestion/runs').catch(() => []),
+      const [r, c] = await Promise.all([
+        apiClient.get('/roles').catch(() => apiClient.get('/db/roles')),
+        apiClient.get('/competencies/catalog').catch(() => []),
       ]);
       setRoles(r || []);
       setCompetencies(c || []);
-      setRuns(ir || []);
+      const latest = await apiClient.get('/admin/ingest/latest').catch(() => null);
+      setLatestRun(latest);
     } catch (e) {
       setErr(e.message);
     }
@@ -35,7 +35,7 @@ export default function AdminPage() {
     setMsg('');
     setErr('');
     try {
-      await apiClient.post('/admin/ingestion/trigger', {});
+      await apiClient.post('/admin/ingest', {});
       setMsg('Ingestion triggered.');
       await load();
     } catch (e) {
@@ -52,22 +52,24 @@ export default function AdminPage() {
           {msg && <div className="text-muted">{msg}</div>}
           {err && <div style={{ color: 'var(--error)' }}>{err}</div>}
         </div>
-        <table className="table">
-          <thead><tr><th>Run ID</th><th>Status</th><th>Started</th></tr></thead>
-          <tbody>
-            {runs.map(r => (
-              <tr key={r.id}><td>{r.id}</td><td>{r.status}</td><td>{r.started_at}</td></tr>
-            ))}
-          </tbody>
-        </table>
+        {latestRun ? (
+          <table className="table">
+            <thead><tr><th>Run ID</th><th>Status</th><th>Started</th></tr></thead>
+            <tbody>
+              <tr><td>{latestRun.id || '-'}</td><td>{latestRun.status || '-'}</td><td>{latestRun.started_at || '-'}</td></tr>
+            </tbody>
+          </table>
+        ) : (
+          <div className="text-muted">No ingestion runs yet.</div>
+        )}
       </div>
 
       <div className="card grow">
         <h2>Catalog — Roles</h2>
         <table className="table">
-          <thead><tr><th>Name</th><th>Family</th></tr></thead>
+          <thead><tr><th>Code</th><th>Name</th></tr></thead>
           <tbody>
-            {roles.map(r => <tr key={r.id}><td>{r.name}</td><td className="text-muted">{r.family || '-'}</td></tr>)}
+            {(roles || []).map(r => <tr key={r.id}><td className="text-muted">{r.code || '-'}</td><td>{r.name}</td></tr>)}
           </tbody>
         </table>
       </div>
@@ -75,9 +77,9 @@ export default function AdminPage() {
       <div className="card grow">
         <h2>Catalog — Competencies</h2>
         <table className="table">
-          <thead><tr><th>Name</th><th>Domain</th></tr></thead>
+          <thead><tr><th>Code</th><th>Name</th></tr></thead>
           <tbody>
-            {competencies.map(c => <tr key={c.id}><td>{c.name}</td><td className="text-muted">{c.domain || '-'}</td></tr>)}
+            {(competencies || []).map(c => <tr key={c.id}><td className="text-muted">{c.code || '-'}</td><td>{c.name}</td></tr>)}
           </tbody>
         </table>
       </div>
