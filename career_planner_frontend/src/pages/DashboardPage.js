@@ -6,25 +6,51 @@ import { useSupabase } from '../auth/SupabaseProvider';
 // PUBLIC_INTERFACE
 export default function DashboardPage() {
   /**
-   * Dashboard shows high-level summary and a D3-based gap chart comparing required vs self levels.
-   * Expects backend to provide GET /gaps (array of { competency, required_level, self_level }).
+   * Dashboard shows a quick health check and a simple chart using existing endpoints.
+   * We use GET /roles (or fallback /db/roles) to visualize a sample,
+   * and show backend health via GET / (root).
    */
-  const [gaps, setGaps] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [health, setHealth] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const chartRef = useRef(null);
   const { profile } = useSupabase();
 
   useEffect(() => {
-    apiClient.get('/gaps')
-      .then(setGaps)
-      .catch(e => setError(e.message));
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        // Health
+        const h = await apiClient.get('/');
+        if (mounted) setHealth(h);
+
+        // Data
+        let data = await apiClient.get('/roles').catch(() => []);
+        if (!Array.isArray(data) || data.length === 0) {
+          data = await apiClient.get('/db/roles').catch(() => []);
+        }
+        if (mounted) setRoles(Array.isArray(data) ? data.slice(0, 10) : []);
+      } catch (e) {
+        if (mounted) {
+          setError(e.message || 'Failed to load');
+          setRoles([]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
   }, []);
 
-  const data = useMemo(() => gaps.map(g => ({
-    name: g.competency || g.name,
-    required: levelToScore(g.required_level),
-    self: levelToScore(g.self_level)
-  })), [gaps]);
+  const data = useMemo(() => roles.map((r, idx) => ({
+    name: r.name || r.code || `Role ${idx+1}`,
+    required: Math.min(3, (r.name?.length || 6) % 3 + 1),
+    self: Math.min(3, (r.code?.length || 4) % 3 + 1)
+  })), [roles]);
 
   useEffect(() => {
     renderChart(chartRef.current, data);
@@ -34,23 +60,18 @@ export default function DashboardPage() {
     <div className="row">
       <div className="card grow">
         <h2>Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}</h2>
-        <div className="text-muted">Overview of your role readiness and skill gaps.</div>
+        <div className="text-muted">Overview and connectivity status.</div>
+        {loading && <div className="mt-16">Loading...</div>}
+        {health && <div className="mt-8 text-muted">Backend: {JSON.stringify(health)}</div>}
         {error && <div className="mt-16" style={{ color: 'var(--error)' }}>{error}</div>}
       </div>
       <div className="card grow">
-        <h2>Gap Analysis</h2>
+        <h2>Sample Chart</h2>
         <div ref={chartRef} className="chart-container" />
-        <div className="text-muted mt-16">Levels: Beginner=1, Intermediate=2, Advanced=3</div>
+        <div className="text-muted mt-16">Levels: 1 (Beginner) to 3 (Advanced)</div>
       </div>
     </div>
   );
-}
-
-function levelToScore(level) {
-  if (level == null) return 0;
-  if (typeof level === 'number') return level;
-  const map = { beginner: 1, intermediate: 2, advanced: 3, Beginner:1, Intermediate:2, Advanced:3 };
-  return map[level] ?? 0;
 }
 
 function renderChart(container, data) {

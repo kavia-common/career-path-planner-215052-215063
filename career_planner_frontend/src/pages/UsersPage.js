@@ -21,7 +21,7 @@ export default function UsersPage() {
       const data = await apiClient.get('/db/users');
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
-      setErr(e.message);
+      setErr(e?.message || 'Failed to load users');
       setItems([]);
     } finally {
       setLoading(false);

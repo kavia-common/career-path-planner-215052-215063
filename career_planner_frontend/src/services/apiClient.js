@@ -1,4 +1,5 @@
-const BASE_URL = process.env.REACT_APP_BACKEND_URL || '';
+const inferred = typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:3001` : '';
+const BASE_URL = (process.env.REACT_APP_BACKEND_URL || inferred || '').replace(/\/$/, '');
 
 class ApiClient {
   constructor() {

@@ -28,7 +28,7 @@ export default function RolesPage() {
       }
       setRoles(Array.isArray(data) ? data : []);
     } catch (e) {
-      setErr(e.message);
+      setErr(e?.message || 'Failed to load roles');
       setRoles([]);
     } finally {
       setLoading(false);

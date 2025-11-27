@@ -17,6 +17,7 @@ This project provides a minimal React template upgraded with a polished Ocean Pr
 Create a `.env` file (or set environment variables) with:
 
 - REACT_APP_BACKEND_URL=https://<backend-host>:3001
+  - If not set, the app will infer http(s)://<current-host>:3001 during development.
 - REACT_APP_SUPABASE_URL=...
 - REACT_APP_SUPABASE_ANON_KEY=...
 - REACT_APP_SITE_URL=https://<your-frontend-host> (optional; defaults to window.location.origin)

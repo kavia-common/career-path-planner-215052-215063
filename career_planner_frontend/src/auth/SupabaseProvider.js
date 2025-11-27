@@ -38,7 +38,7 @@ export function SupabaseProvider({ url, anonKey, children }) {
       if (session?.access_token) {
         apiClient.setAuthToken(session.access_token);
         try {
-          const me = await apiClient.get('/users/me'); // expects { email, is_admin, full_name, ... }
+          const me = await apiClient.get('/me'); // expects { email, is_admin, full_name, ... }
           if (mounted) setProfile(me);
         } catch (_e) {
           if (mounted) setProfile(null);
@@ -54,7 +54,7 @@ export function SupabaseProvider({ url, anonKey, children }) {
       setSession(sess || null);
       if (sess?.access_token) {
         apiClient.setAuthToken(sess.access_token);
-        apiClient.get('/users/me').then(setProfile).catch(() => setProfile(null));
+        apiClient.get('/me').then(setProfile).catch(() => setProfile(null));
       } else {
         apiClient.setAuthToken(null);
         setProfile(null);
